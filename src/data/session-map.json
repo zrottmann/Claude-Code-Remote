@@ -5,5 +5,12 @@
     "expiresAt": 1753559287,
     "cwd": "/Users/jessytsui/dev/TaskPing",
     "description": "测试会话"
+  },
+  "TESTMDKM0Q3M": {
+    "type": "pty",
+    "createdAt": 1753556089,
+    "expiresAt": 1753559689,
+    "cwd": "/Users/jessytsui/dev/TaskPing",
+    "description": "测试会话"
   }
 }
