@@ -1,0 +1,9 @@
+{
+  "TESTMDKLS3MK": {
+    "type": "pty",
+    "createdAt": 1753555687,
+    "expiresAt": 1753559287,
+    "cwd": "/Users/jessytsui/dev/TaskPing",
+    "description": "测试会话"
+  }
+}
