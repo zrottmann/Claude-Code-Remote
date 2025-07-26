@@ -1,0 +1,13 @@
+{
+  "id": "490021fb-856e-4176-b889-af8a9041e44f",
+  "created": "2025-07-15T18:07:33.555Z",
+  "expires": "2025-07-16T18:07:33.555Z",
+  "notification": {
+    "type": "completed",
+    "project": "coverr_video",
+    "message": "[coverr_video] 任务已完成，Claude正在等待下一步指令"
+  },
+  "status": "waiting",
+  "commandCount": 0,
+  "maxCommands": 10
+}

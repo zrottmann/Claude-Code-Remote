@@ -1,0 +1,13 @@
+{
+  "id": "31fa7938-ae5f-4079-a8f5-af083bae0f03",
+  "created": "2025-07-18T11:37:00.528Z",
+  "expires": "2025-07-19T11:37:00.528Z",
+  "notification": {
+    "type": "completed",
+    "project": "JobShield",
+    "message": "[JobShield] 任务已完成，Claude正在等待下一步指令"
+  },
+  "status": "waiting",
+  "commandCount": 0,
+  "maxCommands": 10
+}

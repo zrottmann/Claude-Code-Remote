@@ -1,0 +1,13 @@
+{
+  "id": "afae20d9-2dc0-44d7-925b-de5eb98d65c8",
+  "created": "2025-07-23T21:34:11.244Z",
+  "expires": "2025-07-24T21:34:11.244Z",
+  "notification": {
+    "type": "completed",
+    "project": "pandalla.ai",
+    "message": "[pandalla.ai] 任务已完成，Claude正在等待下一步指令"
+  },
+  "status": "waiting",
+  "commandCount": 0,
+  "maxCommands": 10
+}

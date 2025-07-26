@@ -1,0 +1,13 @@
+{
+  "id": "257faefb-02c0-4016-8314-2abbecf6979b",
+  "created": "2025-07-13T13:15:51.472Z",
+  "expires": "2025-07-14T13:15:51.472Z",
+  "notification": {
+    "type": "completed",
+    "project": "TaskPing",
+    "message": "[TaskPing] 任务已完成，Claude正在等待下一步指令"
+  },
+  "status": "waiting",
+  "commandCount": 0,
+  "maxCommands": 10
+}

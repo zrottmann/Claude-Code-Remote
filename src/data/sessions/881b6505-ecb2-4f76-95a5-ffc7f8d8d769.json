@@ -1,0 +1,13 @@
+{
+  "id": "881b6505-ecb2-4f76-95a5-ffc7f8d8d769",
+  "created": "2025-07-12T23:11:20.140Z",
+  "expires": "2025-07-13T23:11:20.140Z",
+  "notification": {
+    "type": "waiting",
+    "project": "pandalla_api",
+    "message": "[pandalla_api] Claude需要您的进一步指导"
+  },
+  "status": "waiting",
+  "commandCount": 0,
+  "maxCommands": 10
+}

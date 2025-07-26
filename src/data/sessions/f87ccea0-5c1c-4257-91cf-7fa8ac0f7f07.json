@@ -1,0 +1,13 @@
+{
+  "id": "f87ccea0-5c1c-4257-91cf-7fa8ac0f7f07",
+  "created": "2025-07-12T22:27:57.091Z",
+  "expires": "2025-07-13T22:27:57.091Z",
+  "notification": {
+    "type": "completed",
+    "project": "TaskPing-Test",
+    "message": "这是一封测试邮件，用于验证邮件通知功能是否正常工作。"
+  },
+  "status": "waiting",
+  "commandCount": 0,
+  "maxCommands": 10
+}

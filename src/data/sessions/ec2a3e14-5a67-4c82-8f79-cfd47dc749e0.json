@@ -1,0 +1,13 @@
+{
+  "id": "ec2a3e14-5a67-4c82-8f79-cfd47dc749e0",
+  "created": "2025-07-14T09:16:51.780Z",
+  "expires": "2025-07-15T09:16:51.780Z",
+  "notification": {
+    "type": "completed",
+    "project": "pandalla_api",
+    "message": "[pandalla_api] 任务已完成，Claude正在等待下一步指令"
+  },
+  "status": "waiting",
+  "commandCount": 0,
+  "maxCommands": 10
+}
