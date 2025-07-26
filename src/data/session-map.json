@@ -12,5 +12,12 @@
     "expiresAt": 1753559689,
     "cwd": "/Users/jessytsui/dev/TaskPing",
     "description": "测试会话"
+  },
+  "TESTMDKMI9XE": {
+    "type": "pty",
+    "createdAt": 1753556908,
+    "expiresAt": 1753560508,
+    "cwd": "/Users/jessytsui/dev/TaskPing",
+    "description": "测试会话"
   }
 }
