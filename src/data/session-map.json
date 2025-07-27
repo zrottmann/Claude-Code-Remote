@@ -34,5 +34,185 @@
     "sessionId": "a966681d-5cfd-47b9-bb1b-c7ee9655b97b",
     "tmuxSession": "a-0",
     "description": "waiting - TaskPing"
+  },
+  "G3QE3STQ": {
+    "type": "pty",
+    "createdAt": 1753622403,
+    "expiresAt": 1753708803,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "7f6e11b3-0ac9-44b1-a75f-d3a15a8ec46e",
+    "tmuxSession": "claude-taskping",
+    "description": "completed - TaskPing-Test"
+  },
+  "Z0Q98XCC": {
+    "type": "pty",
+    "createdAt": 1753624374,
+    "expiresAt": 1753710774,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "b2408839-8a64-4a07-8ceb-4a7a82ea5b25",
+    "tmuxSession": "claude-taskping",
+    "description": "completed - TaskPing-Test"
+  },
+  "65S5UGHZ": {
+    "type": "pty",
+    "createdAt": 1753624496,
+    "expiresAt": 1753710896,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "117a1097-dd97-41ab-a276-e4820adc8da8",
+    "tmuxSession": "claude-taskping",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "N9PPKGTO": {
+    "type": "pty",
+    "createdAt": 1753624605,
+    "expiresAt": 1753711005,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "0caed3af-35ae-4b42-9081-b1a959735bde",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "TEST12345": {
+    "type": "pty",
+    "createdAt": 1753628000,
+    "expiresAt": 1753714400,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "test-session-id",
+    "tmuxSession": "test-claude",
+    "description": "testing - Test Session"
+  },
+  "YTGT6F6F": {
+    "type": "pty",
+    "createdAt": 1753625040,
+    "expiresAt": 1753711440,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "e6e973b6-20dd-497f-a988-02482af63336",
+    "tmuxSession": "claude-taskping",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "2XQP1N0P": {
+    "type": "pty",
+    "createdAt": 1753625361,
+    "expiresAt": 1753711761,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "0f694f4c-f8a4-476a-946a-3dc057c3bc46",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "GKPSGCBS": {
+    "type": "pty",
+    "createdAt": 1753625618,
+    "expiresAt": 1753712018,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "e844d2ae-9098-4528-9e05-e77904a35be3",
+    "tmuxSession": "claude-taskping",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "187JDGZ0": {
+    "type": "pty",
+    "createdAt": 1753625623,
+    "expiresAt": 1753712023,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "633a2687-81e7-456e-9995-3321ce3f3b2b",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "NSYKTAWC": {
+    "type": "pty",
+    "createdAt": 1753625650,
+    "expiresAt": 1753712050,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "b8dac307-8b4b-4286-aa73-324b9b659e60",
+    "tmuxSession": "claude-taskping",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "1NTEJPH7": {
+    "type": "pty",
+    "createdAt": 1753625743,
+    "expiresAt": 1753712143,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "09466a43-c495-4a30-ac08-eb425748a28c",
+    "tmuxSession": "claude-taskping",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "5XO64F9Z": {
+    "type": "pty",
+    "createdAt": 1753625846,
+    "expiresAt": 1753712246,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "99132172-7a97-46f7-b282-b22054d6e599",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "D8561S3A": {
+    "type": "pty",
+    "createdAt": 1753625904,
+    "expiresAt": 1753712304,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "772628f1-414b-4242-bc8f-660ad53b6c23",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "GR0GED2E": {
+    "type": "pty",
+    "createdAt": 1753626215,
+    "expiresAt": 1753712615,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "da40ba76-7047-41e0-95f2-081db87c1b3b",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "TTRQKVM9": {
+    "type": "pty",
+    "createdAt": 1753626245,
+    "expiresAt": 1753712645,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "c7c5c95d-4541-47f6-b27a-35c0fd563413",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "P9UBHY8L": {
+    "type": "pty",
+    "createdAt": 1753626325,
+    "expiresAt": 1753712725,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "a3f2b4f9-811e-4721-914f-f025919c2530",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "JQAOXCYJ": {
+    "type": "pty",
+    "createdAt": 1753626390,
+    "expiresAt": 1753712790,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "f0d0635b-59f2-45eb-acfc-d649b12fd2d6",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "B7R9OR3K": {
+    "type": "pty",
+    "createdAt": 1753626445,
+    "expiresAt": 1753712845,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "d33e49aa-a58f-46b0-8829-dfef7f474600",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "0KGM60XO": {
+    "type": "pty",
+    "createdAt": 1753626569,
+    "expiresAt": 1753712969,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "02bd4449-bdcf-464e-916e-61bc62a18dd2",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
+  },
+  "5NXM173C": {
+    "type": "pty",
+    "createdAt": 1753626834,
+    "expiresAt": 1753713234,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "f8f915ee-ab64-471c-b3d2-71cb84d2b5fe",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
   }
 }
