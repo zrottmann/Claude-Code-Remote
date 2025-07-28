@@ -520,5 +520,14 @@
     "sessionId": "023bb55f-acc0-4d8a-a2f4-79be0bd9a863",
     "tmuxSession": "video",
     "description": "completed - Claude-Code-Remote"
+  },
+  "IUNWWLOT": {
+    "type": "pty",
+    "createdAt": 1753685816,
+    "expiresAt": 1753772216,
+    "cwd": "/Users/jessytsui/dev/Claude-Code-Remote",
+    "sessionId": "4e67ac76-5c0a-4229-b3cd-c4ff865c9df3",
+    "tmuxSession": "video",
+    "description": "completed - Claude-Code-Remote"
   }
 }
