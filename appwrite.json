@@ -1,11 +1,11 @@
 {
     "projectId": "68a9a5e4003518a2495b",
     "projectName": "remote",
-    "sites": [
-        {
-            "$id": "claude-remote",
-            "name": "Claude Code Remote",
-            "domain": "claude-remote.appwrite.network"
-        }
-    ]
+    "settings": {
+        "endpoint": "https://nyc.cloud.appwrite.io/v1"
+    },
+    "hosting": {
+        "outDir": "out",
+        "buildCommand": "npm run build"
+    }
 }
