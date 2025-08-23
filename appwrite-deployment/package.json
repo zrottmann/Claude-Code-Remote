@@ -1,6 +1,6 @@
 {
   "name": "claude-code-remote-deployment",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Claude Code Remote deployment package",
   "main": "index.html",
   "scripts": {
