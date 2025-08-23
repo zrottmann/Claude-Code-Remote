@@ -49,6 +49,7 @@ export default function Home() {
               <a href="#platforms" className="hover:text-blue-200 transition-colors">Platforms</a>
               <a href="#setup" className="hover:text-blue-200 transition-colors">Setup</a>
               <a href="https://github.com/JessyTsui/Claude-Code-Remote" className="hover:text-blue-200 transition-colors">GitHub</a>
+              <a href="/login" className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors">Sign In</a>
             </div>
           </div>
         </nav>
