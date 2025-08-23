@@ -2,12 +2,11 @@ name: Deploy to Appwrite Sites
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ master ]
     paths:
-      - 'appwrite-deployment/**'
-      - '.github/workflows/deploy-appwrite.yml'
-      - 'out/**'
+      - 'index.html'
       - 'package.json'
+      - '.github/workflows/deploy-appwrite.yml'
   workflow_dispatch:
 
 jobs:
@@ -15,87 +14,154 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
+    - uses: actions/checkout@v3
+    
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v3
       with:
         node-version: '18'
-        cache: 'npm'
     
-    - name: Install dependencies
-      run: npm install --legacy-peer-deps
-      
-    - name: Build application
-      run: npm run build
-      env:
-        NEXT_PUBLIC_APPWRITE_PROJECT_ID: 68a9a5e4003518a2495b
-        NEXT_PUBLIC_APPWRITE_ENDPOINT: https://nyc.cloud.appwrite.io/v1
-      
-    - name: Export static files
-      run: npm run export
-      
-    - name: Create deployment package
+    - name: Create deployment archive
       run: |
-        cd out
-        tar -czf ../deployment.tar.gz .
-        cd ..
-        
+        mkdir -p dist
+        cp index.html dist/
+        tar -czf site.tar.gz -C dist .
+        ls -la site.tar.gz
+    
     - name: Deploy to Appwrite Sites
       env:
-        APPWRITE_ENDPOINT: https://nyc.cloud.appwrite.io/v1
-        APPWRITE_PROJECT_ID: 68a9a5e4003518a2495b
-        APPWRITE_API_KEY: ${{ secrets.CLAUDE_REMOTE_APPWRITE_API_KEY }}
+        APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
       run: |
-        # Install Appwrite SDK
-        npm install appwrite
-        
-        # Create deployment script
         cat > deploy.cjs << 'EOF'
-        const { Client, Storage } = require('appwrite');
-
-        const client = new Client();
-        client
-          .setEndpoint(process.env.APPWRITE_ENDPOINT)
-          .setProject(process.env.APPWRITE_PROJECT_ID)
-          .setKey(process.env.APPWRITE_API_KEY);
-
-        const storage = new Storage(client);
-
-        async function deploy() {
-          try {
-            console.log('🚀 Starting deployment to Appwrite Sites...');
-            
-            // Deploy using direct Sites API approach
-            const fs = require('fs');
-            const path = require('path');
-            
-            console.log('📦 Deployment package created successfully');
-            console.log('🌐 Target: https://remote.appwrite.network');
-            console.log('✅ Ready for manual activation in Appwrite Console');
-            
-          } catch (error) {
-            console.error('❌ Deployment failed:', error.message);
-            console.log('📝 Manual deployment required - check Appwrite Console');
-          }
+        const https = require('https');
+        const fs = require('fs');
+        
+        const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY;
+        const APPWRITE_PROJECT_ID = '68a4e3da0022f3e129d0';
+        
+        if (!APPWRITE_API_KEY) {
+          console.error('❌ APPWRITE_API_KEY not set');
+          process.exit(1);
         }
-
-        deploy();
+        
+        console.log('📤 Deploying Claude Code Remote to Appwrite...');
+        
+        async function deployToSite() {
+          // First try creating the remote function
+          const functionData = JSON.stringify({
+            functionId: 'remote',
+            name: 'Claude Code Remote',
+            runtime: 'node-18.0',
+            execute: ['any'],
+            events: [],
+            schedule: '',
+            timeout: 15,
+            enabled: true
+          });
+          
+          const createOptions = {
+            hostname: 'nyc.cloud.appwrite.io',
+            path: '/v1/functions',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Content-Length': functionData.length,
+              'X-Appwrite-Project': APPWRITE_PROJECT_ID,
+              'X-Appwrite-Key': APPWRITE_API_KEY
+            }
+          };
+          
+          return new Promise((resolve) => {
+            const createReq = https.request(createOptions, (res) => {
+              let data = '';
+              res.on('data', chunk => data += chunk);
+              res.on('end', () => {
+                console.log('Function create status:', res.statusCode);
+                if (res.statusCode === 201) {
+                  console.log('✅ Function created successfully');
+                } else if (res.statusCode === 409) {
+                  console.log('ℹ️ Function already exists');
+                } else {
+                  console.log('Function create response:', data);
+                }
+                
+                // Now deploy to the function
+                deployToFunction();
+              });
+            });
+            
+            createReq.on('error', (e) => {
+              console.log('Function create error:', e.message);
+              deployToFunction();
+            });
+            
+            createReq.write(functionData);
+            createReq.end();
+            
+            function deployToFunction() {
+              const fileData = fs.readFileSync('site.tar.gz');
+              const boundary = '----WebKitFormBoundary' + Date.now();
+              
+              let body = '';
+              body += '--' + boundary + '\\r\\n';
+              body += 'Content-Disposition: form-data; name="entrypoint"\\r\\n\\r\\n';
+              body += 'index.html\\r\\n';
+              body += '--' + boundary + '\\r\\n';
+              body += 'Content-Disposition: form-data; name="activate"\\r\\n\\r\\n';
+              body += 'true\\r\\n';
+              body += '--' + boundary + '\\r\\n';
+              body += 'Content-Disposition: form-data; name="code"; filename="site.tar.gz"\\r\\n';
+              body += 'Content-Type: application/gzip\\r\\n\\r\\n';
+              
+              const bodyBuffer = Buffer.concat([
+                Buffer.from(body),
+                fileData,
+                Buffer.from('\\r\\n--' + boundary + '--\\r\\n')
+              ]);
+              
+              const deployOptions = {
+                hostname: 'nyc.cloud.appwrite.io',
+                path: '/v1/functions/remote/deployments',
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'multipart/form-data; boundary=' + boundary,
+                  'Content-Length': bodyBuffer.length,
+                  'X-Appwrite-Project': APPWRITE_PROJECT_ID,
+                  'X-Appwrite-Key': APPWRITE_API_KEY
+                }
+              };
+              
+              const deployReq = https.request(deployOptions, (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                  console.log('Deploy Status:', res.statusCode);
+                  console.log('Deploy Response:', data);
+                  
+                  if (res.statusCode >= 200 && res.statusCode < 300) {
+                    console.log('✅ Deployment successful!');
+                    console.log('🌐 Site: https://remote.appwrite.network');
+                    console.log('🎉 Claude Code Remote is now live!');
+                  } else {
+                    console.log('❌ Deployment failed');
+                    process.exit(1);
+                  }
+                  resolve();
+                });
+              });
+              
+              deployReq.on('error', (e) => {
+                console.log('❌ Deploy error:', e.message);
+                process.exit(1);
+              });
+              
+              deployReq.write(bodyBuffer);
+              deployReq.end();
+            }
+          });
+        }
+        
+        deployToSite();
         EOF
         
-        # Execute deployment preparation
         node deploy.cjs
-        
-    - name: Upload deployment artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: claude-remote-deployment-$(date +%Y%m%d-%H%M%S)
-        path: deployment.tar.gz
-        
-    - name: Verify deployment readiness
-      run: |
-        echo "🔍 Deployment package verification:"
-        ls -la deployment.tar.gz
-        echo "📊 Package size: $(du -h deployment.tar.gz | cut -f1)"
-        echo "✅ Ready for Appwrite Sites deployment!"
