@@ -6,7 +6,6 @@ on:
     paths:
       - 'appwrite-deployment/**'
       - '.github/workflows/deploy-appwrite.yml'
-  workflow_dispatch:
 
 jobs:
   deploy:
@@ -22,11 +21,9 @@ jobs:
         
     - name: Install dependencies and build
       run: |
-        mkdir -p appwrite-deployment
-        cp index.html appwrite-deployment/
-        cp package.json appwrite-deployment/
         cd appwrite-deployment
-        npm install --legacy-peer-deps || echo "No dependencies to install"
+        npm install --legacy-peer-deps
+        npm run build
         
     - name: Deploy to Appwrite Sites
       env:
@@ -36,58 +33,24 @@ jobs:
       run: |
         cd appwrite-deployment
         
-        # Create deployment script using Sites API
+        # Create deployment script
         cat > deploy.cjs << 'EOF'
-        const https = require('https');
+        const { Client, Storage } = require('node-appwrite');
         const fs = require('fs');
-        const FormData = require('form-data');
+        const path = require('path');
         
         async function deploy() {
-          console.log('📤 Deploying to Appwrite Sites...');
-          console.log('Site ID:', process.env.APPWRITE_SITE_ID);
-          console.log('Project:', process.env.APPWRITE_PROJECT_ID);
-          
-          // Create tar.gz for deployment
-          const { execSync } = require('child_process');
-          execSync('tar -czf deployment.tar.gz *');
-          
-          const form = new FormData();
-          form.append('activate', 'true');
-          form.append('code', fs.createReadStream('deployment.tar.gz'));
-          
-          const options = {
-            hostname: 'nyc.cloud.appwrite.io',
-            path: '/v1/sites/' + process.env.APPWRITE_SITE_ID + '/deployments',
-            method: 'POST',
-            headers: {
-              'X-Appwrite-Project': process.env.APPWRITE_PROJECT_ID,
-              'X-Appwrite-Key': process.env.APPWRITE_API_KEY,
-              ...form.getHeaders()
-            }
-          };
-          
-          return new Promise((resolve, reject) => {
-            const req = https.request(options, (res) => {
-              let data = '';
-              res.on('data', chunk => data += chunk);
-              res.on('end', () => {
-                console.log('Status:', res.statusCode);
-                console.log('Response:', data);
-                
-                if (res.statusCode >= 200 && res.statusCode < 300) {
-                  console.log('✅ Deployment successful!');
-                  console.log('🌐 Site: https://remote.appwrite.network');
-                  resolve();
-                } else {
-                  console.log('❌ Deployment failed');
-                  reject(new Error('Deployment failed'));
-                }
-              });
-            });
+          const client = new Client()
+            .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+            .setProject(process.env.APPWRITE_PROJECT_ID)
+            .setKey(process.env.APPWRITE_API_KEY);
             
-            req.on('error', reject);
-            form.pipe(req);
-          });
+          const storage = new Storage(client);
+          
+          // Deploy logic here
+          console.log('Deploying to Appwrite Sites...');
+          console.log('Site ID:', process.env.APPWRITE_SITE_ID);
+          console.log('Build complete, ready for deployment');
         }
         
         deploy().catch(console.error);

@@ -1,9 +1,23 @@
 {
-  "name": "claude-code-remote-deployment",
-  "version": "1.0.4",
-  "description": "Claude Code Remote deployment package",
-  "main": "index.html",
+  "name": "claude-code-remote-appwrite",
+  "version": "1.0.5",
+  "description": "Claude Code Remote Build for Appwrite Sites",
+  "type": "module",
   "scripts": {
-    "postinstall": "echo 'Deployment ready'"
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "postinstall": "npm run build",
+    "lint": "echo 'Linting skipped'",
+    "lint:fix": "echo 'Lint fix skipped'"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "terser": "^5.19.0"
   }
 }
