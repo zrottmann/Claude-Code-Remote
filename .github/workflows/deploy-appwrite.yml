@@ -28,7 +28,7 @@ jobs:
     - name: Deploy to Appwrite Sites
       env:
         APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
-        APPWRITE_PROJECT_ID: 68a9a5e4003518a2495b
+        APPWRITE_PROJECT_ID: 68a4e3da0022f3e129d0
         APPWRITE_SITE_ID: remote
       run: |
         cd appwrite-deployment
