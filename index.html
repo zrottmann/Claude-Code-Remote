@@ -73,13 +73,26 @@
         .button-primary { background: #667eea; color: white; }
         .button-secondary { background: white; color: #667eea; border: 2px solid #667eea; }
         .button:hover { transform: translateY(-2px); }
+        .deploy-status {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            color: #2e7d32;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Claude Code Remote</h1>
+            <h1>🤖 Claude Code Remote</h1>
             <p class="subtitle">Control Claude Code remotely via Email, Discord, and Telegram</p>
+        </div>
+        
+        <div class="deploy-status">
+            ✅ Site successfully deployed via GitHub Pages
         </div>
         
         <div class="features">
@@ -108,7 +121,7 @@
         <div class="setup">
             <h2>Quick Setup</h2>
             <div class="code-block">
-                git clone https://github.com/JessyTsui/Claude-Code-Remote.git<br>
+                git clone https://github.com/zrottmann/Claude-Code-Remote.git<br>
                 cd Claude-Code-Remote && npm install<br>
                 cp .env.example .env<br>
                 # Edit .env with your credentials<br>
@@ -117,8 +130,8 @@
         </div>
         
         <div class="buttons">
-            <a href="https://github.com/JessyTsui/Claude-Code-Remote" class="button button-primary">View on GitHub</a>
-            <a href="https://github.com/JessyTsui/Claude-Code-Remote#readme" class="button button-secondary">Documentation</a>
+            <a href="https://github.com/zrottmann/Claude-Code-Remote" class="button button-primary">View on GitHub</a>
+            <a href="https://github.com/zrottmann/Claude-Code-Remote#readme" class="button button-secondary">Documentation</a>
         </div>
     </div>
 </body>
