@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 {
   "entrypoint": "index.html",
   "execute": ["any"],
   "runtime": "static-1.0"
 }
+=======
+{"entrypoint":"index.html","execute":["any"],"runtime":"static-1.0"}
+>>>>>>> 9de67ef (add functions directory for remote deployment)
