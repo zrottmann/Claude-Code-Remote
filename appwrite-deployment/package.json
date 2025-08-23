@@ -1,13 +1,9 @@
 {
   "name": "claude-code-remote-deployment",
-  "version": "1.0.0",
-  "description": "Deployment package for Claude Code Remote",
-  "private": true,
+  "version": "1.0.3",
+  "description": "Claude Code Remote deployment package",
+  "main": "index.html",
   "scripts": {
-    "install": "cd .. && npm install --legacy-peer-deps && npm run build && npm run export",
-    "build": "echo 'Build triggered via GitHub Actions'"
-  },
-  "keywords": ["claude", "code", "remote", "appwrite", "deployment"],
-  "author": "Claude Code Remote Team",
-  "license": "MIT"
+    "postinstall": "echo 'Deployment ready'"
+  }
 }

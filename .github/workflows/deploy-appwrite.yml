@@ -4,8 +4,7 @@ on:
   push:
     branches: [ master ]
     paths:
-      - 'index.html'
-      - 'package.json'
+      - 'appwrite-deployment/**'
       - '.github/workflows/deploy-appwrite.yml'
   workflow_dispatch:
 
@@ -20,148 +19,78 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-    
-    - name: Create deployment archive
+        
+    - name: Install dependencies and build
       run: |
-        mkdir -p dist
-        cp index.html dist/
-        tar -czf site.tar.gz -C dist .
-        ls -la site.tar.gz
-    
+        mkdir -p appwrite-deployment
+        cp index.html appwrite-deployment/
+        cp package.json appwrite-deployment/
+        cd appwrite-deployment
+        npm install --legacy-peer-deps || echo "No dependencies to install"
+        
     - name: Deploy to Appwrite Sites
       env:
         APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+        APPWRITE_PROJECT_ID: 68a9a5e4003518a2495b
+        APPWRITE_SITE_ID: remote
       run: |
+        cd appwrite-deployment
+        
+        # Create deployment script using Sites API
         cat > deploy.cjs << 'EOF'
         const https = require('https');
         const fs = require('fs');
+        const FormData = require('form-data');
         
-        const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY;
-        const APPWRITE_PROJECT_ID = '68a4e3da0022f3e129d0';
-        
-        if (!APPWRITE_API_KEY) {
-          console.error('❌ APPWRITE_API_KEY not set');
-          process.exit(1);
-        }
-        
-        console.log('📤 Deploying Claude Code Remote to Appwrite...');
-        
-        async function deployToSite() {
-          // First try creating the remote function
-          const functionData = JSON.stringify({
-            functionId: 'remote',
-            name: 'Claude Code Remote',
-            runtime: 'node-18.0',
-            execute: ['any'],
-            events: [],
-            schedule: '',
-            timeout: 15,
-            enabled: true
-          });
+        async function deploy() {
+          console.log('📤 Deploying to Appwrite Sites...');
+          console.log('Site ID:', process.env.APPWRITE_SITE_ID);
+          console.log('Project:', process.env.APPWRITE_PROJECT_ID);
           
-          const createOptions = {
+          // Create tar.gz for deployment
+          const { execSync } = require('child_process');
+          execSync('tar -czf deployment.tar.gz *');
+          
+          const form = new FormData();
+          form.append('activate', 'true');
+          form.append('code', fs.createReadStream('deployment.tar.gz'));
+          
+          const options = {
             hostname: 'nyc.cloud.appwrite.io',
-            path: '/v1/functions',
+            path: '/v1/sites/' + process.env.APPWRITE_SITE_ID + '/deployments',
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              'Content-Length': functionData.length,
-              'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-              'X-Appwrite-Key': APPWRITE_API_KEY
+              'X-Appwrite-Project': process.env.APPWRITE_PROJECT_ID,
+              'X-Appwrite-Key': process.env.APPWRITE_API_KEY,
+              ...form.getHeaders()
             }
           };
           
-          return new Promise((resolve) => {
-            const createReq = https.request(createOptions, (res) => {
+          return new Promise((resolve, reject) => {
+            const req = https.request(options, (res) => {
               let data = '';
               res.on('data', chunk => data += chunk);
               res.on('end', () => {
-                console.log('Function create status:', res.statusCode);
-                if (res.statusCode === 201) {
-                  console.log('✅ Function created successfully');
-                } else if (res.statusCode === 409) {
-                  console.log('ℹ️ Function already exists');
-                } else {
-                  console.log('Function create response:', data);
-                }
+                console.log('Status:', res.statusCode);
+                console.log('Response:', data);
                 
-                // Now deploy to the function
-                deployToFunction();
-              });
-            });
-            
-            createReq.on('error', (e) => {
-              console.log('Function create error:', e.message);
-              deployToFunction();
-            });
-            
-            createReq.write(functionData);
-            createReq.end();
-            
-            function deployToFunction() {
-              const fileData = fs.readFileSync('site.tar.gz');
-              const boundary = '----WebKitFormBoundary' + Date.now();
-              
-              let body = '';
-              body += '--' + boundary + '\\r\\n';
-              body += 'Content-Disposition: form-data; name="entrypoint"\\r\\n\\r\\n';
-              body += 'index.html\\r\\n';
-              body += '--' + boundary + '\\r\\n';
-              body += 'Content-Disposition: form-data; name="activate"\\r\\n\\r\\n';
-              body += 'true\\r\\n';
-              body += '--' + boundary + '\\r\\n';
-              body += 'Content-Disposition: form-data; name="code"; filename="site.tar.gz"\\r\\n';
-              body += 'Content-Type: application/gzip\\r\\n\\r\\n';
-              
-              const bodyBuffer = Buffer.concat([
-                Buffer.from(body),
-                fileData,
-                Buffer.from('\\r\\n--' + boundary + '--\\r\\n')
-              ]);
-              
-              const deployOptions = {
-                hostname: 'nyc.cloud.appwrite.io',
-                path: '/v1/functions/remote/deployments',
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'multipart/form-data; boundary=' + boundary,
-                  'Content-Length': bodyBuffer.length,
-                  'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-                  'X-Appwrite-Key': APPWRITE_API_KEY
-                }
-              };
-              
-              const deployReq = https.request(deployOptions, (res) => {
-                let data = '';
-                res.on('data', chunk => data += chunk);
-                res.on('end', () => {
-                  console.log('Deploy Status:', res.statusCode);
-                  console.log('Deploy Response:', data);
-                  
-                  if (res.statusCode >= 200 && res.statusCode < 300) {
-                    console.log('✅ Deployment successful!');
-                    console.log('🌐 Site: https://remote.appwrite.network');
-                    console.log('🎉 Claude Code Remote is now live!');
-                  } else {
-                    console.log('❌ Deployment failed');
-                    process.exit(1);
-                  }
+                if (res.statusCode >= 200 && res.statusCode < 300) {
+                  console.log('✅ Deployment successful!');
+                  console.log('🌐 Site: https://remote.appwrite.network');
                   resolve();
-                });
+                } else {
+                  console.log('❌ Deployment failed');
+                  reject(new Error('Deployment failed'));
+                }
               });
-              
-              deployReq.on('error', (e) => {
-                console.log('❌ Deploy error:', e.message);
-                process.exit(1);
-              });
-              
-              deployReq.write(bodyBuffer);
-              deployReq.end();
-            }
+            });
+            
+            req.on('error', reject);
+            form.pipe(req);
           });
         }
         
-        deployToSite();
+        deploy().catch(console.error);
         EOF
         
         node deploy.cjs
