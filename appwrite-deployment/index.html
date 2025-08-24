@@ -3,145 +3,1150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claude Code Remote - Control Claude Remotely</title>
+    <title>Claude Code Remote Chat - Multi-Console Control</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            background: #0a0b0d;
+            color: #e4e4e7;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: #1a1b1e;
+            border-bottom: 1px solid #27272a;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fbbf24;
+        }
+
+        .status-indicator {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #10b981;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 73px);
+        }
+
+        /* Console Sidebar */
+        .console-sidebar {
+            width: 280px;
+            background: #18181b;
+            border-right: 1px solid #27272a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid #27272a;
+            font-weight: 600;
+            color: #a1a1aa;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .console-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .console-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #1f1f23;
+            cursor: pointer;
+            transition: background 0.15s;
+            position: relative;
+        }
+
+        .console-item:hover {
+            background: #1f1f23;
+        }
+
+        .console-item.active {
+            background: #1e40af;
+            color: #ffffff;
+        }
+
+        .console-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .console-status {
+            font-size: 0.75rem;
+            color: #71717a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .console-item.active .console-status {
+            color: #bfdbfe;
+        }
+
+        .add-console {
+            padding: 1rem;
+            border-top: 1px solid #27272a;
+        }
+
+        .add-console-btn {
+            width: 100%;
+            padding: 0.5rem;
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 6px;
+            color: #a1a1aa;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .add-console-btn:hover {
+            background: #3f3f46;
+            color: #e4e4e7;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0a0b0d;
+        }
+
+        .chat-header {
+            padding: 1rem;
+            background: #1a1b1e;
+            border-bottom: 1px solid #27272a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .active-console-info h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .active-console-info p {
+            font-size: 0.875rem;
+            color: #71717a;
+            margin-top: 0.25rem;
+        }
+
+        .console-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 6px;
+            color: #e4e4e7;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.15s;
+        }
+
+        .action-btn:hover {
+            background: #3f3f46;
+        }
+
+        .action-btn.danger {
+            background: #dc2626;
+            border-color: #ef4444;
+        }
+
+        .action-btn.danger:hover {
+            background: #ef4444;
+        }
+
+        /* Messages */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            display: flex;
+            max-width: 100%;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            background: #27272a;
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            max-width: 70%;
+            position: relative;
+        }
+
+        .message.user .message-content {
+            background: #1e40af;
+            color: #ffffff;
+        }
+
+        .message-meta {
+            font-size: 0.75rem;
+            color: #71717a;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .message.user .message-meta {
+            color: #bfdbfe;
+        }
+
+        .message-text {
+            line-height: 1.5;
+        }
+
+        .message-text code {
+            background: #1a1a1a;
+            color: #fbbf24;
+            padding: 0.125rem 0.25rem;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+
+        .message.user .message-text code {
+            background: #1e3a8a;
+            color: #fbbf24;
+        }
+
+        .code-block {
+            background: #1a1a1a;
+            border: 1px solid #3f3f46;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #71717a;
+            font-style: italic;
+            padding: 1rem;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #71717a;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(1); opacity: 0.5; }
+            40% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* Input Area */
+        .input-area {
+            background: #1a1b1e;
+            border-top: 1px solid #27272a;
+            padding: 1rem;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1;
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: #e4e4e7;
+            font-family: inherit;
+            resize: none;
+            min-height: 48px;
+            max-height: 120px;
+            line-height: 1.5;
+            transition: border-color 0.15s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #1e40af;
+        }
+
+        .input-field::placeholder {
+            color: #71717a;
+        }
+
+        .send-button {
+            background: #1e40af;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            color: #ffffff;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background: #1d4ed8;
+        }
+
+        .send-button:disabled {
+            background: #374151;
+            cursor: not-allowed;
+        }
+
+        /* Welcome State */
+        .welcome-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #71717a;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .quick-action {
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            color: #a1a1aa;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.15s;
+        }
+
+        .quick-action:hover {
+            background: #3f3f46;
+            color: #e4e4e7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .console-sidebar {
+                display: none;
+            }
+            
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            z-index: 1000;
+            padding: 1rem;
         }
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 900px;
+
+        .modal-content {
+            background: #1a1b1e;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
             width: 100%;
-            padding: 60px;
+            border: 1px solid #27272a;
         }
-        @media (max-width: 768px) {
-            .container { padding: 30px; }
-            h1 { font-size: 2em !important; }
-            .features { grid-template-columns: 1fr !important; }
+
+        .modal h3 {
+            margin-bottom: 1rem;
+            color: #e4e4e7;
         }
-        .header { text-align: center; margin-bottom: 50px; }
-        h1 { color: #333; font-size: 2.5em; margin-bottom: 10px; }
-        .subtitle { color: #666; font-size: 1.2em; line-height: 1.6; }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin: 40px 0;
+
+        .form-group {
+            margin-bottom: 1rem;
         }
-        .feature {
-            padding: 25px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            transition: transform 0.3s;
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #a1a1aa;
+            font-size: 0.875rem;
         }
-        .feature:hover { transform: translateY(-5px); }
-        .feature-icon { font-size: 2em; margin-bottom: 15px; }
-        .feature h3 { color: #333; margin-bottom: 10px; }
-        .feature p { color: #666; line-height: 1.6; }
-        .setup {
-            background: #f0f4f8;
-            border-radius: 10px;
-            padding: 30px;
-            margin: 40px 0;
+
+        .form-group input, .form-group select {
+            width: 100%;
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 6px;
+            padding: 0.75rem;
+            color: #e4e4e7;
+            font-family: inherit;
         }
-        .setup h2 { color: #333; margin-bottom: 20px; }
-        .code-block {
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 15px;
-            border-radius: 5px;
-            font-family: monospace;
-            margin: 10px 0;
-            overflow-x: auto;
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #1e40af;
         }
-        .buttons {
+
+        .modal-actions {
             display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 40px;
-            flex-wrap: wrap;
-        }
-        .button {
-            padding: 15px 30px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: transform 0.3s;
-        }
-        .button-primary { background: #667eea; color: white; }
-        .button-secondary { background: white; color: #667eea; border: 2px solid #667eea; }
-        .button:hover { transform: translateY(-2px); }
-        .deploy-status {
-            background: #e8f5e8;
-            border: 1px solid #4caf50;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-            text-align: center;
-            color: #2e7d32;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🤖 Claude Code Remote</h1>
-            <p class="subtitle">Control Claude Code remotely via Email, Discord, and Telegram</p>
+    <!-- Include WebSocket Integration -->
+    <script src="websocket-integration.js"></script>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">🤖 Claude Code Remote Chat</div>
+        <div class="status-indicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Disconnected</span>
         </div>
-        
-        <div class="deploy-status">
-            ✅ Site successfully deployed to remote.appwrite.network
-        </div>
-        
-        <div class="features">
-            <div class="feature">
-                <div class="feature-icon">🚀</div>
-                <h3>Start Tasks Remotely</h3>
-                <p>Send commands to Claude Code from anywhere using your preferred messaging platform</p>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Console Sidebar -->
+        <aside class="console-sidebar">
+            <div class="sidebar-header">Active Consoles</div>
+            <div class="console-list" id="consoleList">
+                <!-- Console items will be dynamically added -->
             </div>
-            <div class="feature">
-                <div class="feature-icon">🔔</div>
-                <h3>Real-time Notifications</h3>
-                <p>Get instant notifications when Claude completes tasks or needs your input</p>
+            <div class="add-console">
+                <button class="add-console-btn" id="addConsoleBtn">+ Add New Console</button>
             </div>
-            <div class="feature">
-                <div class="feature-icon">💬</div>
-                <h3>Reply to Continue</h3>
-                <p>Send new commands by simply replying to notification messages</p>
+        </aside>
+
+        <!-- Chat Area -->
+        <main class="chat-area">
+            <!-- Welcome State (shown when no console is selected) -->
+            <div class="welcome-state" id="welcomeState">
+                <div class="welcome-icon">🚀</div>
+                <h2>Welcome to Claude Code Remote Chat</h2>
+                <p>Add a new console to start controlling Claude Code remotely</p>
             </div>
-            <div class="feature">
-                <div class="feature-icon">🔒</div>
-                <h3>Secure & Private</h3>
-                <p>All communications are encrypted and your data stays on your local machine</p>
+
+            <!-- Active Chat (hidden by default) -->
+            <div id="activeChat" style="display: none; flex-direction: column; height: 100%;">
+                <div class="chat-header">
+                    <div class="active-console-info">
+                        <h2 id="activeConsoleName">Claude Console #1</h2>
+                        <p id="activeConsoleStatus">Connected • Last seen 2 minutes ago</p>
+                    </div>
+                    <div class="console-actions">
+                        <button class="action-btn" id="clearChatBtn">Clear Chat</button>
+                        <button class="action-btn danger" id="disconnectBtn">Disconnect</button>
+                    </div>
+                </div>
+
+                <div class="messages-container" id="messagesContainer">
+                    <!-- Messages will be dynamically added -->
+                </div>
+
+                <!-- Typing Indicator -->
+                <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    <span>Claude is thinking...</span>
+                </div>
+
+                <div class="input-area">
+                    <div class="quick-actions">
+                        <button class="quick-action" data-command="/help">Help</button>
+                        <button class="quick-action" data-command="/status">Status</button>
+                        <button class="quick-action" data-command="/tasks">List Tasks</button>
+                        <button class="quick-action" data-command="/git status">Git Status</button>
+                        <button class="quick-action" data-command="/ls">List Files</button>
+                    </div>
+                    <div class="input-wrapper">
+                        <textarea 
+                            class="input-field" 
+                            id="messageInput" 
+                            placeholder="Send a command to Claude Code..." 
+                            rows="1"
+                        ></textarea>
+                        <button class="send-button" id="sendButton">
+                            <span>Send</span>
+                            <span>⏎</span>
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div class="setup">
-            <h2>Quick Setup</h2>
-            <div class="code-block">
-                git clone https://github.com/zrottmann/Claude-Code-Remote.git<br>
-                cd Claude-Code-Remote && npm install<br>
-                cp .env.example .env<br>
-                # Edit .env with your credentials<br>
-                npm run daemon:start
-            </div>
-        </div>
-        
-        <div class="buttons">
-            <a href="https://github.com/zrottmann/Claude-Code-Remote" class="button button-primary">View on GitHub</a>
-            <a href="https://github.com/zrottmann/Claude-Code-Remote#readme" class="button button-secondary">Documentation</a>
+        </main>
+    </div>
+
+    <!-- Add Console Modal -->
+    <div class="modal" id="addConsoleModal" style="display: none;">
+        <div class="modal-content">
+            <h3>Add New Console</h3>
+            <form id="addConsoleForm">
+                <div class="form-group">
+                    <label for="consoleName">Console Name</label>
+                    <input type="text" id="consoleName" placeholder="e.g., Development Machine">
+                </div>
+                <div class="form-group">
+                    <label for="consoleEndpoint">WebSocket Endpoint</label>
+                    <input type="text" id="consoleEndpoint" placeholder="ws://localhost:8080/ws">
+                </div>
+                <div class="form-group">
+                    <label for="consoleType">Console Type</label>
+                    <select id="consoleType">
+                        <option value="local">Local Machine</option>
+                        <option value="remote">Remote Server</option>
+                        <option value="docker">Docker Container</option>
+                        <option value="wsl">WSL Instance</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="action-btn" id="cancelAddConsole">Cancel</button>
+                    <button type="submit" class="action-btn" style="background: #1e40af;">Add Console</button>
+                </div>
+            </form>
         </div>
     </div>
-    
-    <script type="module" src="/src/main.js"></script>
+
+    <script>
+        class ClaudeCodeRemoteChat {
+            constructor() {
+                this.consoles = new Map();
+                this.activeConsole = null;
+                this.messageHistory = new Map();
+                this.websockets = new Map();
+                this.websocketManagers = new Map();
+                
+                this.initializeEventListeners();
+                this.loadSavedConsoles();
+                this.updateUI();
+            }
+
+            initializeEventListeners() {
+                // Add console button
+                document.getElementById('addConsoleBtn').addEventListener('click', () => {
+                    this.showAddConsoleModal();
+                });
+
+                // Modal events
+                document.getElementById('cancelAddConsole').addEventListener('click', () => {
+                    this.hideAddConsoleModal();
+                });
+
+                document.getElementById('addConsoleForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addNewConsole();
+                });
+
+                // Chat events
+                document.getElementById('sendButton').addEventListener('click', () => {
+                    this.sendMessage();
+                });
+
+                document.getElementById('messageInput').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                // Auto-resize textarea
+                document.getElementById('messageInput').addEventListener('input', (e) => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                });
+
+                // Quick actions
+                document.querySelectorAll('.quick-action').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const command = btn.dataset.command;
+                        document.getElementById('messageInput').value = command;
+                        this.sendMessage();
+                    });
+                });
+
+                // Chat actions
+                document.getElementById('clearChatBtn').addEventListener('click', () => {
+                    this.clearChat();
+                });
+
+                document.getElementById('disconnectBtn').addEventListener('click', () => {
+                    this.disconnectConsole();
+                });
+            }
+
+            loadSavedConsoles() {
+                // Load from localStorage
+                const saved = localStorage.getItem('claudeRemoteConsoles');
+                if (saved) {
+                    try {
+                        const consoles = JSON.parse(saved);
+                        consoles.forEach(console => {
+                            this.consoles.set(console.id, console);
+                            this.messageHistory.set(console.id, console.messages || []);
+                        });
+                    } catch (e) {
+                        console.error('Failed to load saved consoles:', e);
+                    }
+                }
+
+                // Add demo console if none exist
+                if (this.consoles.size === 0) {
+                    this.addDemoConsole();
+                }
+            }
+
+            addDemoConsole() {
+                const demoConsole = {
+                    id: 'demo-1',
+                    name: 'Demo Console (Local)',
+                    endpoint: 'ws://localhost:8080/ws',
+                    type: 'local',
+                    status: 'connected',
+                    lastSeen: new Date().toISOString()
+                };
+                
+                this.consoles.set(demoConsole.id, demoConsole);
+                this.messageHistory.set(demoConsole.id, [
+                    {
+                        id: Date.now(),
+                        type: 'system',
+                        content: 'Welcome to Claude Code Remote Chat! This is a demo console.\n\nTry sending commands like:\n• `/help` - Show available commands\n• `/status` - Check system status\n• `/git status` - Check git repository status\n• `ls` - List current directory files',
+                        timestamp: new Date().toISOString()
+                    }
+                ]);
+            }
+
+            saveConsoles() {
+                const consolesToSave = Array.from(this.consoles.values()).map(console => ({
+                    ...console,
+                    messages: this.messageHistory.get(console.id) || []
+                }));
+                localStorage.setItem('claudeRemoteConsoles', JSON.stringify(consolesToSave));
+            }
+
+            showAddConsoleModal() {
+                document.getElementById('addConsoleModal').style.display = 'flex';
+                document.getElementById('consoleName').focus();
+            }
+
+            hideAddConsoleModal() {
+                document.getElementById('addConsoleModal').style.display = 'none';
+                document.getElementById('addConsoleForm').reset();
+            }
+
+            addNewConsole() {
+                const name = document.getElementById('consoleName').value.trim();
+                const endpoint = document.getElementById('consoleEndpoint').value.trim();
+                const type = document.getElementById('consoleType').value;
+
+                if (!name || !endpoint) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+
+                const console = {
+                    id: Date.now().toString(),
+                    name,
+                    endpoint,
+                    type,
+                    status: 'connecting',
+                    lastSeen: new Date().toISOString()
+                };
+
+                this.consoles.set(console.id, console);
+                this.messageHistory.set(console.id, []);
+                this.connectToConsole(console.id);
+                
+                this.hideAddConsoleModal();
+                this.updateUI();
+                this.saveConsoles();
+            }
+
+            async connectToConsole(consoleId) {
+                const console = this.consoles.get(consoleId);
+                if (!console) return;
+
+                // Initialize WebSocket manager for this console
+                const wsManager = new ClaudeCodeWebSocketManager();
+                this.websocketManagers.set(consoleId, wsManager);
+
+                // Set up event handlers
+                wsManager.on('status:connecting', () => {
+                    console.status = 'connecting';
+                    this.updateUI();
+                    this.addSystemMessage(consoleId, `Connecting to ${console.name}...`);
+                });
+
+                wsManager.on('status:connected', (data) => {
+                    console.status = 'connected';
+                    console.lastSeen = new Date().toISOString();
+                    this.updateUI();
+                    this.addSystemMessage(consoleId, `✅ Connected to ${console.name} at ${data.endpoint}`);
+                });
+
+                wsManager.on('status:error', (data) => {
+                    console.status = 'error';
+                    this.updateUI();
+                    this.addSystemMessage(consoleId, `❌ Connection error: ${data.error.message}`);
+                });
+
+                wsManager.on('status:disconnected', (data) => {
+                    console.status = 'disconnected';
+                    this.updateUI();
+                    this.addSystemMessage(consoleId, `⚠️ Disconnected from ${console.name} (Code: ${data.code})`);
+                });
+
+                wsManager.on('claude:response', (data) => {
+                    this.hideTypingIndicator();
+                    this.addMessage(consoleId, 'assistant', data.response || data.message);
+                });
+
+                wsManager.on('command:response', (data) => {
+                    this.hideTypingIndicator();
+                    const response = data.result || data.output || 'Command executed successfully';
+                    this.addMessage(consoleId, 'assistant', `Command Result:\n\`\`\`\n${response}\n\`\`\``);
+                });
+
+                wsManager.on('error', (data) => {
+                    this.hideTypingIndicator();
+                    this.addSystemMessage(consoleId, `Error: ${data.error}`);
+                });
+
+                // Attempt connection
+                try {
+                    console.status = 'connecting';
+                    this.updateUI();
+                    await wsManager.connect(console.endpoint);
+                } catch (error) {
+                    console.status = 'error';
+                    this.updateUI();
+                    this.addSystemMessage(consoleId, `Failed to connect: ${error.message}`);
+                }
+            }
+
+            disconnectConsole() {
+                if (!this.activeConsole) return;
+
+                const console = this.consoles.get(this.activeConsole);
+                const wsManager = this.websocketManagers.get(this.activeConsole);
+
+                if (wsManager) {
+                    wsManager.disconnect();
+                    this.websocketManagers.delete(this.activeConsole);
+                }
+
+                if (console) {
+                    console.status = 'disconnected';
+                    this.addSystemMessage(this.activeConsole, `Disconnected from ${console.name}`);
+                }
+
+                this.updateUI();
+                this.saveConsoles();
+            }
+
+            selectConsole(consoleId) {
+                this.activeConsole = consoleId;
+                this.updateUI();
+                this.loadMessages();
+            }
+
+            updateUI() {
+                this.updateConsoleList();
+                this.updateChatArea();
+                this.updateStatus();
+            }
+
+            updateConsoleList() {
+                const list = document.getElementById('consoleList');
+                list.innerHTML = '';
+
+                this.consoles.forEach((console, id) => {
+                    const item = document.createElement('div');
+                    item.className = `console-item ${id === this.activeConsole ? 'active' : ''}`;
+                    item.addEventListener('click', () => this.selectConsole(id));
+
+                    // Check real WebSocket connection status
+                    const wsManager = this.websocketManagers.get(id);
+                    const realStatus = wsManager && wsManager.isConnected() ? 'connected' : console.status;
+                    const wsInfo = wsManager ? `WS: ${wsManager.getStatus().status}` : 'No WS';
+                    
+                    const statusIcon = realStatus === 'connected' ? '🟢' : 
+                                     realStatus === 'connecting' ? '🟡' : 
+                                     realStatus === 'error' ? '🔴' : '⚫';
+
+                    item.innerHTML = `
+                        <div class="console-name">${console.name}</div>
+                        <div class="console-status">
+                            ${statusIcon} ${realStatus} • ${console.type}
+                        </div>
+                        <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                            ${wsInfo}
+                        </div>
+                    `;
+
+                    list.appendChild(item);
+                });
+            }
+
+            updateChatArea() {
+                const welcomeState = document.getElementById('welcomeState');
+                const activeChat = document.getElementById('activeChat');
+
+                if (this.activeConsole && this.consoles.has(this.activeConsole)) {
+                    welcomeState.style.display = 'none';
+                    activeChat.style.display = 'flex';
+                    
+                    const console = this.consoles.get(this.activeConsole);
+                    document.getElementById('activeConsoleName').textContent = console.name;
+                    document.getElementById('activeConsoleStatus').textContent = 
+                        `${console.status} • Last seen ${this.formatTime(console.lastSeen)}`;
+                } else {
+                    welcomeState.style.display = 'flex';
+                    activeChat.style.display = 'none';
+                }
+            }
+
+            updateStatus() {
+                const statusDot = document.getElementById('statusDot');
+                const statusText = document.getElementById('statusText');
+
+                // Check real WebSocket connections
+                const connectedConsoles = Array.from(this.consoles.values()).filter(c => {
+                    const wsManager = this.websocketManagers.get(c.id);
+                    return wsManager && wsManager.isConnected();
+                });
+
+                const connectingConsoles = Array.from(this.consoles.values()).filter(c => c.status === 'connecting');
+                const totalManagedConsoles = this.websocketManagers.size;
+
+                if (connectedConsoles.length > 0) {
+                    statusDot.classList.add('connected');
+                    statusText.textContent = `WebSocket Connected (${connectedConsoles.length}/${totalManagedConsoles})`;
+                } else if (connectingConsoles.length > 0) {
+                    statusDot.classList.remove('connected');
+                    statusText.textContent = `Connecting... (${connectingConsoles.length} console${connectingConsoles.length > 1 ? 's' : ''})`;
+                } else if (totalManagedConsoles > 0) {
+                    statusDot.classList.remove('connected');
+                    statusText.textContent = `Disconnected (${totalManagedConsoles} console${totalManagedConsoles > 1 ? 's' : ''})`;
+                } else {
+                    statusDot.classList.remove('connected');
+                    statusText.textContent = 'No active connections';
+                }
+            }
+
+            loadMessages() {
+                if (!this.activeConsole) return;
+
+                const container = document.getElementById('messagesContainer');
+                container.innerHTML = '';
+
+                const messages = this.messageHistory.get(this.activeConsole) || [];
+                messages.forEach(message => {
+                    this.renderMessage(message);
+                });
+
+                container.scrollTop = container.scrollHeight;
+            }
+
+            renderMessage(message) {
+                const container = document.getElementById('messagesContainer');
+                const messageEl = document.createElement('div');
+                messageEl.className = `message ${message.type}`;
+
+                const time = this.formatTime(message.timestamp);
+                const sender = message.type === 'user' ? 'You' : 
+                              message.type === 'system' ? 'System' : 'Claude';
+
+                let content = message.content;
+                if (content.includes('```')) {
+                    content = content.replace(/```([\s\S]*?)```/g, '<div class="code-block">$1</div>');
+                } else {
+                    content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
+                }
+
+                messageEl.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-meta">
+                            <strong>${sender}</strong>
+                            <span>${time}</span>
+                        </div>
+                        <div class="message-text">${content.replace(/\n/g, '<br>')}</div>
+                    </div>
+                `;
+
+                container.appendChild(messageEl);
+                container.scrollTop = container.scrollHeight;
+            }
+
+            sendMessage() {
+                const input = document.getElementById('messageInput');
+                const message = input.value.trim();
+
+                if (!message || !this.activeConsole) return;
+
+                const console = this.consoles.get(this.activeConsole);
+                const wsManager = this.websocketManagers.get(this.activeConsole);
+
+                // Add user message
+                this.addMessage(this.activeConsole, 'user', message);
+                input.value = '';
+                input.style.height = 'auto';
+
+                // Show typing indicator
+                this.showTypingIndicator();
+
+                if (wsManager && wsManager.isConnected()) {
+                    try {
+                        // Send message via WebSocket
+                        if (message.startsWith('/')) {
+                            // Handle as command
+                            const command = message.substring(1);
+                            wsManager.sendCommand(command, this.activeConsole, {
+                                timestamp: new Date().toISOString(),
+                                source: 'chat-interface'
+                            });
+                        } else {
+                            // Send as Claude message
+                            wsManager.sendClaudeMessage(message, this.activeConsole);
+                        }
+                    } catch (error) {
+                        this.hideTypingIndicator();
+                        this.addSystemMessage(this.activeConsole, `Failed to send message: ${error.message}`);
+                    }
+                } else {
+                    // Fallback to simulation if not connected
+                    this.hideTypingIndicator();
+                    this.addSystemMessage(this.activeConsole, 'Not connected to WebSocket server. Using demo responses.');
+                    setTimeout(() => {
+                        this.simulateClaudeResponse(message);
+                    }, 1000);
+                }
+            }
+
+            showTypingIndicator() {
+                document.getElementById('typingIndicator').style.display = 'flex';
+                const container = document.getElementById('messagesContainer');
+                container.scrollTop = container.scrollHeight;
+            }
+
+            hideTypingIndicator() {
+                document.getElementById('typingIndicator').style.display = 'none';
+            }
+
+            simulateClaudeResponse(userMessage) {
+                this.hideTypingIndicator();
+
+                let response = '';
+
+                if (userMessage.startsWith('/help')) {
+                    response = `Available commands:
+• \`/help\` - Show this help message
+• \`/status\` - Show system status
+• \`/tasks\` - List current tasks
+• \`/git status\` - Check git repository status
+• \`ls\` - List files in current directory
+• \`cd [path]\` - Change directory
+• \`npm install\` - Install dependencies
+• \`npm run build\` - Build project
+
+You can also send any command that Claude Code supports!`;
+                } else if (userMessage.startsWith('/status')) {
+                    response = `System Status:
+✅ Claude Code: Running
+✅ Connection: Stable
+✅ Working Directory: /Users/developer/project
+📊 Memory Usage: 64% (2.1GB/3.2GB)
+🔧 Active Tasks: 0
+📁 Current Branch: main`;
+                } else if (userMessage.startsWith('/tasks')) {
+                    response = `Current Tasks:
+📋 No active tasks
+
+Task History:
+✅ Analyzed project structure (5 minutes ago)
+✅ Fixed linting errors (12 minutes ago)
+✅ Updated dependencies (1 hour ago)`;
+                } else if (userMessage.startsWith('/git')) {
+                    response = `\`\`\`
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   src/components/ChatInterface.jsx
+        modified:   package.json
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        src/utils/websocket.js
+
+no changes added to commit (use "git add" or "git commit -a")
+\`\`\``;
+                } else if (userMessage === 'ls' || userMessage.startsWith('ls ')) {
+                    response = `\`\`\`
+drwxr-xr-x   - src/
+drwxr-xr-x   - public/
+drwxr-xr-x   - node_modules/
+-rw-r--r--   1.2K package.json
+-rw-r--r--   5.4K README.md
+-rw-r--r--   0.8K .gitignore
+-rw-r--r--   2.1K vite.config.js
+\`\`\``;
+                } else {
+                    const responses = [
+                        `I'll help you with that! Let me execute: \`${userMessage}\`\n\nCommand completed successfully. ✅`,
+                        `Processing your request...\n\nResult: Command \`${userMessage}\` executed successfully.\n\nIs there anything else you'd like me to help with?`,
+                        `Running \`${userMessage}\`...\n\n✅ Task completed!\n\nOutput:\n\`\`\`\nOperation completed successfully\nNo errors found\n\`\`\``,
+                        `I've executed your command: \`${userMessage}\`\n\nEverything looks good! The operation completed without any issues.`
+                    ];
+                    response = responses[Math.floor(Math.random() * responses.length)];
+                }
+
+                this.addMessage(this.activeConsole, 'assistant', response);
+            }
+
+            addMessage(consoleId, type, content) {
+                const message = {
+                    id: Date.now(),
+                    type,
+                    content,
+                    timestamp: new Date().toISOString()
+                };
+
+                if (!this.messageHistory.has(consoleId)) {
+                    this.messageHistory.set(consoleId, []);
+                }
+
+                this.messageHistory.get(consoleId).push(message);
+                
+                if (consoleId === this.activeConsole) {
+                    this.renderMessage(message);
+                }
+
+                this.saveConsoles();
+            }
+
+            addSystemMessage(consoleId, content) {
+                this.addMessage(consoleId, 'system', content);
+            }
+
+            clearChat() {
+                if (!this.activeConsole) return;
+                
+                if (confirm('Are you sure you want to clear this chat history?')) {
+                    this.messageHistory.set(this.activeConsole, []);
+                    this.loadMessages();
+                    this.saveConsoles();
+                }
+            }
+
+            formatTime(timestamp) {
+                const date = new Date(timestamp);
+                const now = new Date();
+                const diff = now - date;
+
+                if (diff < 60000) return 'now';
+                if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+                if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+                return date.toLocaleDateString();
+            }
+        }
+
+        // Initialize the chat application
+        document.addEventListener('DOMContentLoaded', () => {
+            new ClaudeCodeRemoteChat();
+        });
+    </script>
 </body>
 </html>
