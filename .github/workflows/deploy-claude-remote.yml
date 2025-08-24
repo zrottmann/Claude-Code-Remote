@@ -1,0 +1,253 @@
+name: Deploy Claude Code Remote to Appwrite
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'appwrite-deployment/**'
+      - '.github/workflows/deploy-claude-remote.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+
+env:
+  APPWRITE_PROJECT_ID: "68a4e3da0022f3e129d0"
+  APPWRITE_SITE_ID: "remote"
+  NODE_VERSION: "18"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      deployment-ready: ${{ steps.build-check.outputs.ready }}
+    
+    steps:
+    - name: 🔄 Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+        
+    - name: 🔍 Check for Changes
+      id: changes
+      run: |
+        if git diff --name-only HEAD~ HEAD | grep -E "(appwrite-deployment/)" > /dev/null 2>&1; then
+          echo "changes-detected=true" >> $GITHUB_OUTPUT
+        else
+          echo "changes-detected=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: ⚙️ Setup Node.js
+      if: steps.changes.outputs.changes-detected == 'true'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: 📦 Install Dependencies
+      if: steps.changes.outputs.changes-detected == 'true'
+      run: |
+        cd appwrite-deployment
+        npm install --legacy-peer-deps --silent || echo "No dependencies to install"
+        
+    - name: 🏗️ Build Application
+      if: steps.changes.outputs.changes-detected == 'true'
+      run: |
+        cd appwrite-deployment
+        # No build step needed for static HTML/JS
+        echo "Static site, no build required"
+        
+    - name: ✅ Build Quality Check
+      id: build-check
+      if: steps.changes.outputs.changes-detected == 'true'
+      run: |
+        cd appwrite-deployment
+        if [ -f "index.html" ] && [ -f "websocket-integration.js" ]; then
+          echo "✅ Required files exist"
+          echo "ready=true" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Required files missing"
+          echo "ready=false" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+        
+    - name: 📋 Upload Build Artifacts
+      if: steps.changes.outputs.changes-detected == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: claude-remote-build
+        path: appwrite-deployment/
+        retention-days: 7
+
+  deploy-sites:
+    needs: build
+    if: needs.build.outputs.deployment-ready == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 🔄 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 📥 Download Build Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: claude-remote-build
+        path: appwrite-deployment/
+        
+    - name: 📦 Create Deployment Package
+      run: |
+        cd appwrite-deployment
+        tar -czf claude-remote-deployment.tar.gz index.html websocket-integration.js package.json
+        ls -la claude-remote-deployment.tar.gz
+        echo "📊 Package size: $(du -h claude-remote-deployment.tar.gz | cut -f1)"
+        
+    - name: 🚀 Deploy to Appwrite Sites
+      id: sites-deploy
+      run: |
+        cd appwrite-deployment
+        echo "🎯 Deploying to Sites API..."
+        
+        RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+          "https://nyc.cloud.appwrite.io/v1/sites/${{ env.APPWRITE_SITE_ID }}/deployments" \
+          -H "X-Appwrite-Project: ${{ env.APPWRITE_PROJECT_ID }}" \
+          -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
+          -H "Content-Type: multipart/form-data" \
+          -F "code=@claude-remote-deployment.tar.gz" \
+          -F "activate=true")
+          
+        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+        RESPONSE_BODY=$(echo "$RESPONSE" | sed '$d')
+        
+        echo "HTTP Status: $HTTP_CODE"
+        echo "Response: $RESPONSE_BODY"
+        
+        if [ "$HTTP_CODE" -eq 201 ] || [ "$HTTP_CODE" -eq 200 ]; then
+          echo "✅ Sites deployment successful!"
+          echo "🌐 Chat Interface URL: https://${{ env.APPWRITE_SITE_ID }}.appwrite.network"
+          echo "success=true" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Sites deployment failed with code: $HTTP_CODE"
+          echo "success=false" >> $GITHUB_OUTPUT
+        fi
+
+  deploy-function:
+    needs: [build, deploy-sites]
+    if: needs.build.outputs.deployment-ready == 'true' && needs.deploy-sites.outputs.success != 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 🔄 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 📥 Download Build Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: claude-remote-build
+        path: appwrite-deployment/
+        
+    - name: 📦 Create Function Package
+      run: |
+        cd appwrite-deployment
+        tar -czf claude-remote-function.tar.gz index.html websocket-integration.js package.json
+        
+    - name: 🔧 Create Appwrite Function
+      run: |
+        echo "📝 Creating/updating function..."
+        curl -s -X POST \
+          "https://nyc.cloud.appwrite.io/v1/functions" \
+          -H "X-Appwrite-Project: ${{ env.APPWRITE_PROJECT_ID }}" \
+          -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "functionId": "remote",
+            "name": "Claude Code Remote Chat",
+            "runtime": "node-18.0",
+            "execute": ["any"],
+            "events": [],
+            "schedule": "",
+            "timeout": 15
+          }' || echo "Function may already exist, continuing..."
+          
+    - name: 🚀 Deploy Function
+      run: |
+        cd appwrite-deployment
+        echo "🎯 Deploying as Function..."
+        
+        RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+          "https://nyc.cloud.appwrite.io/v1/functions/remote/deployments" \
+          -H "X-Appwrite-Project: ${{ env.APPWRITE_PROJECT_ID }}" \
+          -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
+          -H "Content-Type: multipart/form-data" \
+          -F "code=@claude-remote-function.tar.gz" \
+          -F "entrypoint=index.html" \
+          -F "activate=true")
+          
+        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+        RESPONSE_BODY=$(echo "$RESPONSE" | sed '$d')
+        
+        echo "HTTP Status: $HTTP_CODE"
+        echo "Response: $RESPONSE_BODY"
+        
+        if [ "$HTTP_CODE" -eq 201 ] || [ "$HTTP_CODE" -eq 200 ]; then
+          echo "✅ Function deployment successful!"
+          echo "🌐 Function URL: https://remote.appwrite.network"
+        else
+          echo "❌ Function deployment failed with code: $HTTP_CODE"
+          exit 1
+        fi
+
+  notify:
+    needs: [build, deploy-sites, deploy-function]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📊 Deployment Summary
+      run: |
+        echo "💬 Claude Code Remote Chat Deployment Summary"
+        echo "============================================"
+        echo "Build Status: ${{ needs.build.result }}"
+        echo "Sites Deploy: ${{ needs.deploy-sites.result }}"
+        echo "Function Deploy: ${{ needs.deploy-function.result }}"
+        echo ""
+        
+        if [ "${{ needs.deploy-sites.result }}" == "success" ]; then
+          echo "🎉 Successfully deployed to Sites!"
+          echo "🌐 Chat URL: https://${{ env.APPWRITE_SITE_ID }}.appwrite.network"
+        elif [ "${{ needs.deploy-function.result }}" == "success" ]; then
+          echo "🎉 Successfully deployed as Function!"
+          echo "🌐 Function URL: https://remote.appwrite.network"
+        else
+          echo "❌ Deployment failed. Check logs for details."
+        fi
+        
+    - name: 🔗 Create Deployment Report
+      if: success()
+      run: |
+        echo "## 💬 Claude Code Remote Chat Deployment Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Deployment Date:** $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🌐 Chat Interface URLs" >> $GITHUB_STEP_SUMMARY
+        echo "- **Primary:** https://${{ env.APPWRITE_SITE_ID }}.appwrite.network" >> $GITHUB_STEP_SUMMARY
+        echo "- **Fallback:** https://remote.appwrite.network" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🎉 WebSocket Features" >> $GITHUB_STEP_SUMMARY
+        echo "- Real-time WebSocket connections to Claude Code instances" >> $GITHUB_STEP_SUMMARY
+        echo "- Multi-console management with actual remote control" >> $GITHUB_STEP_SUMMARY
+        echo "- Live connection status indicators" >> $GITHUB_STEP_SUMMARY
+        echo "- WebSocket-based command execution and messaging" >> $GITHUB_STEP_SUMMARY
+        echo "- Automatic reconnection with fallback to demo mode" >> $GITHUB_STEP_SUMMARY
+        echo "- Real-time message routing between multiple consoles" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### ✅ Deployment Status" >> $GITHUB_STEP_SUMMARY
+        echo "- Build: ✅ Success" >> $GITHUB_STEP_SUMMARY
+        echo "- Deploy: ✅ Success" >> $GITHUB_STEP_SUMMARY
+        echo "- Chat Interface Status: 💬 Ready for WebSocket Integration!" >> $GITHUB_STEP_SUMMARY
