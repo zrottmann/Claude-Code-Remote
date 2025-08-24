@@ -3,7 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Claude Code Remote - Control Claude Remotely</title>
+    
+    <!-- MOBILE LOADING FIX -->
+    <script>
+      (function() {
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        // Clear service workers on mobile
+        if (isMobile && 'serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(regs => {
+            regs.forEach(reg => reg.unregister());
+          });
+        }
+        // iOS private mode fix
+        try {
+          localStorage.setItem('test', '1');
+          localStorage.removeItem('test');
+        } catch (e) {
+          window.localStorage = window.sessionStorage;
+        }
+      })();
+    </script>
+    
     <!-- GitHub Pages Deployment Trigger -->
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
