@@ -1,21 +1,9 @@
 {
-  "name": "claude-code-remote-appwrite",
-  "version": "1.1.0",
-  "description": "Claude Code Remote Build for Appwrite Sites",
-  "type": "module",
+  "name": "claude-code-ui-remote",
+  "version": "1.0.0",
+  "description": "Remote Claude Code UI with GitHub and Appwrite integration",
+  "main": "index.html",
   "scripts": {
-    "build": "vite build",
-    "dev": "vite",
-    "preview": "vite preview",
-    "postinstall": "npm run build",
-    "lint": "echo 'Linting skipped'",
-    "lint:fix": "echo 'Lint fix skipped'"
-  },
-  "dependencies": {
-    "vite": "^5.0.0",
-    "node-appwrite": "^13.0.0"
-  },
-  "devDependencies": {
-    "terser": "^5.19.0"
+    "start": "http-server . -p 3000"
   }
 }
