@@ -19,7 +19,7 @@ on:
 
 env:
   APPWRITE_PROJECT_ID: "68a4e3da0022f3e129d0"
-  APPWRITE_SITE_ID: "remote"
+  APPWRITE_SITE_ID: "super-site" 
   NODE_VERSION: "18"
 
 jobs:
@@ -128,7 +128,7 @@ jobs:
         
         if [ "$HTTP_CODE" -eq 201 ] || [ "$HTTP_CODE" -eq 200 ]; then
           echo "✅ Sites deployment successful!"
-          echo "🌐 Chat Interface URL: https://${{ env.APPWRITE_SITE_ID }}.appwrite.network"
+          echo "🌐 Chat Interface URL: https://super.appwrite.network"
           echo "success=true" >> $GITHUB_OUTPUT
         else
           echo "❌ Sites deployment failed with code: $HTTP_CODE"
@@ -195,7 +195,7 @@ jobs:
         
         if [ "$HTTP_CODE" -eq 201 ] || [ "$HTTP_CODE" -eq 200 ]; then
           echo "✅ Function deployment successful!"
-          echo "🌐 Function URL: https://remote.appwrite.network"
+          echo "🌐 Function URL: https://super.appwrite.network"
         else
           echo "❌ Function deployment failed with code: $HTTP_CODE"
           exit 1
@@ -221,7 +221,7 @@ jobs:
           echo "🌐 Chat URL: https://${{ env.APPWRITE_SITE_ID }}.appwrite.network"
         elif [ "${{ needs.deploy-function.result }}" == "success" ]; then
           echo "🎉 Successfully deployed as Function!"
-          echo "🌐 Function URL: https://remote.appwrite.network"
+          echo "🌐 Function URL: https://super.appwrite.network"
         else
           echo "❌ Deployment failed. Check logs for details."
         fi
