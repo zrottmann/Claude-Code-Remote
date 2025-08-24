@@ -7,6 +7,7 @@
     "postinstall": "npm run build"
   },
   "dependencies": {
-    "appwrite": "^18.2.0"
+    "appwrite": "^18.2.0",
+    "dotenv": "^17.2.1"
   }
 }
