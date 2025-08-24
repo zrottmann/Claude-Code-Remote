@@ -1,6 +1,6 @@
 {
   "name": "claude-code-remote-appwrite",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Claude Code Remote Build for Appwrite Sites",
   "type": "module",
   "scripts": {
