@@ -4,6 +4,7 @@
   "description": "Remote Claude Code UI with GitHub and Appwrite integration",
   "main": "index.html",
   "scripts": {
-    "start": "http-server . -p 3000"
+    "start": "http-server . -p 3000",
+    "build": "echo 'No build step needed for static HTML' && mkdir -p dist && cp index.html dist/"
   }
 }
