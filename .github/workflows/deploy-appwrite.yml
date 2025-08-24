@@ -33,27 +33,83 @@ jobs:
       run: |
         cd appwrite-deployment
         
+        # Create deployment archive
+        tar -czf claude-websocket-integration.tar.gz index.html websocket-integration.js package.json
+        
         # Create deployment script
         cat > deploy.cjs << 'EOF'
-        const { Client, Storage } = require('node-appwrite');
+        const https = require('https');
         const fs = require('fs');
-        const path = require('path');
         
-        async function deploy() {
-          const client = new Client()
-            .setEndpoint('https://nyc.cloud.appwrite.io/v1')
-            .setProject(process.env.APPWRITE_PROJECT_ID)
-            .setKey(process.env.APPWRITE_API_KEY);
+        console.log('🚀 Deploying Claude Code Remote WebSocket Integration to remote.appwrite.network...');
+        
+        const fileData = fs.readFileSync('claude-websocket-integration.tar.gz');
+        const boundary = '----WebKitFormBoundary' + Date.now();
+        
+        let body = '';
+        body += '--' + boundary + '\r\n';
+        body += 'Content-Disposition: form-data; name="entrypoint"\r\n\r\n';
+        body += 'index.html\r\n';
+        body += '--' + boundary + '\r\n';
+        body += 'Content-Disposition: form-data; name="activate"\r\n\r\n';
+        body += 'true\r\n';
+        body += '--' + boundary + '\r\n';
+        body += 'Content-Disposition: form-data; name="code"; filename="claude-websocket-integration.tar.gz"\r\n';
+        body += 'Content-Type: application/gzip\r\n\r\n';
+        
+        const bodyBuffer = Buffer.concat([
+          Buffer.from(body),
+          fileData,
+          Buffer.from('\r\n--' + boundary + '--\r\n')
+        ]);
+        
+        const options = {
+          hostname: 'nyc.cloud.appwrite.io',
+          port: 443,
+          path: '/v1/functions/' + process.env.APPWRITE_SITE_ID + '/deployments',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data; boundary=' + boundary,
+            'Content-Length': bodyBuffer.length,
+            'X-Appwrite-Project': process.env.APPWRITE_PROJECT_ID,
+            'X-Appwrite-Key': process.env.APPWRITE_API_KEY
+          }
+        };
+        
+        const req = https.request(options, (res) => {
+          let data = '';
+          res.on('data', chunk => data += chunk);
+          res.on('end', () => {
+            console.log('Deploy Status:', res.statusCode);
+            console.log('Response:', data);
             
-          const storage = new Storage(client);
-          
-          // Deploy logic here
-          console.log('Deploying to Appwrite Sites...');
-          console.log('Site ID:', process.env.APPWRITE_SITE_ID);
-          console.log('Build complete, ready for deployment');
-        }
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              console.log('✅ Claude Code Remote WebSocket Integration deployed successfully!');
+              console.log('🌐 Multi-Console Chat Interface: https://remote.appwrite.network');
+              console.log('');
+              console.log('🎉 WebSocket Features now live:');
+              console.log('  • Real-time WebSocket connections to Claude Code instances');
+              console.log('  • Multi-console management with actual remote control');
+              console.log('  • Live connection status indicators');
+              console.log('  • WebSocket-based command execution and messaging');
+              console.log('  • Automatic reconnection with fallback to demo mode');
+              console.log('  • Real-time message routing between multiple consoles');
+              console.log('');
+              console.log('🎯 Ready for Claude Code WebSocket integration!');
+            } else {
+              console.log('❌ Deployment failed');
+              process.exit(1);
+            }
+          });
+        });
         
-        deploy().catch(console.error);
+        req.on('error', e => {
+          console.log('❌ Deploy error:', e.message);
+          process.exit(1);
+        });
+        
+        req.write(bodyBuffer);
+        req.end();
         EOF
         
         node deploy.cjs
