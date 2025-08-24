@@ -25,7 +25,7 @@ jobs:
         npm install --legacy-peer-deps
         npm run build
         
-    - name: Deploy to Appwrite Sites
+    - name: Deploy ClaudeCodeUI to Appwrite Sites
       env:
         APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
         APPWRITE_PROJECT_ID: 68a4e3da0022f3e129d0
@@ -33,17 +33,17 @@ jobs:
       run: |
         cd appwrite-deployment
         
-        # Create deployment archive
-        tar -czf claude-websocket-integration.tar.gz index.html websocket-integration.js package.json
+        # Create ClaudeCodeUI deployment archive
+        tar -czf claude-code-ui-final.tar.gz index.html package.json
         
-        # Create deployment script
+        # Create deployment script for ClaudeCodeUI
         cat > deploy.cjs << 'EOF'
         const https = require('https');
         const fs = require('fs');
         
-        console.log('🚀 Deploying Claude Code Remote WebSocket Integration to remote.appwrite.network...');
+        console.log('🚀 Deploying ClaudeCodeUI interface to remote.appwrite.network...');
         
-        const fileData = fs.readFileSync('claude-websocket-integration.tar.gz');
+        const fileData = fs.readFileSync('claude-code-ui-final.tar.gz');
         const boundary = '----WebKitFormBoundary' + Date.now();
         
         let body = '';
@@ -54,7 +54,7 @@ jobs:
         body += 'Content-Disposition: form-data; name="activate"\r\n\r\n';
         body += 'true\r\n';
         body += '--' + boundary + '\r\n';
-        body += 'Content-Disposition: form-data; name="code"; filename="claude-websocket-integration.tar.gz"\r\n';
+        body += 'Content-Disposition: form-data; name="code"; filename="claude-code-ui-final.tar.gz"\r\n';
         body += 'Content-Type: application/gzip\r\n\r\n';
         
         const bodyBuffer = Buffer.concat([
@@ -84,18 +84,18 @@ jobs:
             console.log('Response:', data);
             
             if (res.statusCode >= 200 && res.statusCode < 300) {
-              console.log('✅ Claude Code Remote WebSocket Integration deployed successfully!');
-              console.log('🌐 Multi-Console Chat Interface: https://remote.appwrite.network');
+              console.log('✅ ClaudeCodeUI interface deployed successfully!');
+              console.log('🌐 Claude Code UI: https://remote.appwrite.network');
               console.log('');
-              console.log('🎉 WebSocket Features now live:');
-              console.log('  • Real-time WebSocket connections to Claude Code instances');
-              console.log('  • Multi-console management with actual remote control');
-              console.log('  • Live connection status indicators');
-              console.log('  • WebSocket-based command execution and messaging');
-              console.log('  • Automatic reconnection with fallback to demo mode');
-              console.log('  • Real-time message routing between multiple consoles');
+              console.log('🎉 ClaudeCodeUI Features now live:');
+              console.log('  • AI Chat Assistant with Claude integration');
+              console.log('  • CodeMirror-based code editor with syntax highlighting');
+              console.log('  • GitHub API integration for repository management');
+              console.log('  • Appwrite cloud services integration');
+              console.log('  • Mobile-responsive design with professional dark theme');
+              console.log('  • Project and file explorer functionality');
               console.log('');
-              console.log('🎯 Ready for Claude Code WebSocket integration!');
+              console.log('🎯 Ready for remote Claude Code development!');
             } else {
               console.log('❌ Deployment failed');
               process.exit(1);

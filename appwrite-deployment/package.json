@@ -1,10 +1,10 @@
 {
   "name": "claude-code-ui-remote",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Remote Claude Code UI with GitHub and Appwrite integration",
   "main": "index.html",
   "scripts": {
     "start": "http-server . -p 3000",
-    "build": "echo 'No build step needed for static HTML' && mkdir -p dist && cp index.html dist/"
+    "build": "echo 'ClaudeCodeUI deployment ready' && mkdir -p dist && cp index.html dist/"
   }
 }
