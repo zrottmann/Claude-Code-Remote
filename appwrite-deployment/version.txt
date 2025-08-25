@@ -1,1 +1,1 @@
-1.1.1-superconsole-deploy-config
+1.1.2-trigger-github-actions-deploy
