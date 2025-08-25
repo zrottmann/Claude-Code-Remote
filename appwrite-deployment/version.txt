@@ -1,1 +1,1 @@
-1.0.11-correct-project-68aa1a4500288bc04682
+1.1.0-claude-api-integration-fix

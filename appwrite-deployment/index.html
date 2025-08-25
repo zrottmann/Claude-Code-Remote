@@ -374,6 +374,10 @@
             background: var(--accent-secondary);
         }
 
+        .message.system .message-avatar {
+            background: var(--accent-warning);
+        }
+
         .chat-input {
             border-top: 1px solid var(--border-primary);
             padding: 1rem;
@@ -609,7 +613,7 @@
                 <button class="nav-tab active" data-tab="chat">Chat</button>
                 <button class="nav-tab" data-tab="editor">Editor</button>
                 <button class="nav-tab" data-tab="github">GitHub</button>
-                <button class="nav-tab" data-tab="appwrite">Appwrite</button>
+                <button class="nav-tab" data-tab="appwrite">Claude</button>
             </div>
         </div>
         <div class="header-right">
@@ -742,10 +746,22 @@
                 </div>
             </div>
 
-            <!-- Appwrite Integration Panel -->
+            <!-- Claude API Integration Panel -->
             <div class="content-panel" id="appwritePanel">
                 <div class="github-panel">
-                    <div class="auth-section">
+                    <div class="auth-section" id="claudeAuth">
+                        <h2 class="auth-title">🤖 Claude API Configuration</h2>
+                        <p class="auth-description">Enter your Claude API key to enable AI chat functionality.</p>
+                        <input 
+                            type="password" 
+                            class="token-input" 
+                            id="claudeApiKey" 
+                            placeholder="Enter your Claude API Key (sk-ant-...)"
+                        />
+                        <button class="connect-btn" id="connectClaudeBtn">Connect to Claude</button>
+                    </div>
+                    
+                    <div class="auth-section" style="margin-top: 2rem;">
                         <h2 class="auth-title">🚀 Appwrite Integration</h2>
                         <p class="auth-description">Connect to Appwrite cloud services for database, storage, and authentication.</p>
                         <input 
@@ -784,6 +800,10 @@
     <script>
         // Global state management
         const AppState = {
+            claude: {
+                apiKey: null,
+                connected: false
+            },
             github: {
                 token: null,
                 user: null,
@@ -859,8 +879,13 @@ greetUser('Developer');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}`;
             
-            const avatar = sender === 'user' ? 'U' : 'C';
-            const avatarClass = sender === 'user' ? 'user' : '';
+            const avatarMap = {
+                'user': 'U',
+                'claude': 'C', 
+                'system': 'S'
+            };
+            const avatar = avatarMap[sender] || 'C';
+            const avatarClass = sender;
             
             messageDiv.innerHTML = `
                 <div class="message-avatar ${avatarClass}">${avatar}</div>
@@ -873,28 +898,64 @@ greetUser('Developer');
             AppState.chatMessages.push({ content, sender, timestamp: new Date() });
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
             
             if (!message) return;
             
+            // Check if Claude API is connected
+            if (!AppState.claude.connected) {
+                addMessage('⚠️ Please connect to Claude API first. Go to the Claude tab and enter your API key.', 'system');
+                return;
+            }
+            
             // Add user message
             addMessage(message, 'user');
             input.value = '';
             
-            // Simulate Claude response (replace with actual API call)
-            setTimeout(() => {
-                const responses = [
-                    "I'd be happy to help you with that! Could you provide more details about what you're trying to accomplish?",
-                    "That's a great question! Let me break this down for you...",
-                    "I can help you implement that. Here's what I recommend...",
-                    "Based on your code, I notice a few things we could improve...",
-                    "Let's work on this together. First, let me understand your project structure..."
-                ];
-                const response = responses[Math.floor(Math.random() * responses.length)];
-                addMessage(response, 'claude');
-            }, 1000);
+            // Disable send button while processing
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            
+            try {
+                // Call Claude API
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': AppState.claude.apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-3-sonnet-20240229',
+                        max_tokens: 1024,
+                        messages: [
+                            {
+                                role: 'user',
+                                content: message
+                            }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Claude API error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const claudeResponse = data.content[0].text;
+                addMessage(claudeResponse, 'claude');
+                
+            } catch (error) {
+                console.error('Claude API error:', error);
+                addMessage(`❌ Error communicating with Claude API: ${error.message}. Please check your API key and try again.`, 'system');
+            } finally {
+                // Re-enable send button
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send';
+            }
         }
 
         // GitHub API integration
@@ -986,7 +1047,75 @@ greetUser('Developer');
             }, 1000);
         }
 
-        // Appwrite integration
+        // Claude API integration
+        async function connectClaude() {
+            const apiKey = document.getElementById('claudeApiKey').value.trim();
+            
+            if (!apiKey) {
+                alert('Please enter your Claude API key');
+                return;
+            }
+            
+            if (!apiKey.startsWith('sk-ant-')) {
+                alert('Invalid Claude API key format. It should start with "sk-ant-"');
+                return;
+            }
+            
+            const connectBtn = document.getElementById('connectClaudeBtn');
+            connectBtn.disabled = true;
+            connectBtn.textContent = 'Connecting...';
+            
+            try {
+                // Test the API key with a simple request
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-3-sonnet-20240229',
+                        max_tokens: 50,
+                        messages: [
+                            {
+                                role: 'user',
+                                content: 'Hello, can you confirm you are working?'
+                            }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API key validation failed: ${response.status} ${response.statusText}`);
+                }
+
+                // If we get here, the API key is valid
+                AppState.claude.apiKey = apiKey;
+                AppState.claude.connected = true;
+                
+                // Update status
+                updateConnectionStatus('claude', true);
+                
+                // Hide Claude auth section
+                document.getElementById('claudeAuth').style.display = 'none';
+                
+                // Show success message
+                addMessage('🎉 Successfully connected to Claude API! You can now chat with Claude.', 'system');
+                
+                // Switch to chat tab
+                switchTab('chat');
+                
+            } catch (error) {
+                console.error('Claude API connection error:', error);
+                alert(`Failed to connect to Claude API: ${error.message}`);
+            } finally {
+                connectBtn.disabled = false;
+                connectBtn.textContent = 'Connect to Claude';
+            }
+        }
+
+        // Appwrite integration  
         function connectAppwrite() {
             const endpoint = document.getElementById('appwriteEndpoint').value.trim();
             const projectId = document.getElementById('appwriteProject').value.trim();
@@ -1004,7 +1133,7 @@ greetUser('Developer');
             // Update status
             updateConnectionStatus('appwrite', true);
             
-            addMessage(`🚀 Connected to Appwrite project: ${projectId}`, 'claude');
+            addMessage(`🚀 Connected to Appwrite project: ${projectId}`, 'system');
         }
 
         // Connection status management
@@ -1053,6 +1182,9 @@ greetUser('Developer');
             
             // GitHub connection
             document.getElementById('connectGithubBtn').addEventListener('click', connectGithub);
+            
+            // Claude API connection
+            document.getElementById('connectClaudeBtn').addEventListener('click', connectClaude);
             
             // Appwrite connection
             document.getElementById('connectAppwriteBtn').addEventListener('click', connectAppwrite);
