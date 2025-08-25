@@ -1,1 +1,1 @@
-1.0.9-site-68aa1b51000a9c3a9c36
+1.0.10-auth-fix-68aa1b51000a9c3a9c36

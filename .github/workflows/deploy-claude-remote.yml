@@ -18,7 +18,7 @@ on:
         - staging
 
 env:
-  APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '689bdee000098bd9d55c' }}
+  APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '68a4e3da0022f3e129d0' }}
   APPWRITE_SITE_ID: ${{ secrets.APPWRITE_SITE_ID || '68aa1b51000a9c3a9c36' }}
   NODE_VERSION: "18"
 
@@ -115,7 +115,7 @@ jobs:
         RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
           "https://nyc.cloud.appwrite.io/v1/functions/${{ env.APPWRITE_SITE_ID }}/deployments" \
           -H "X-Appwrite-Project: ${{ env.APPWRITE_PROJECT_ID }}" \
-          -H "X-Appwrite-Key: ${{ secrets.TRADING_POST_APPWRITE_API_KEY }}" \
+          -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
           -H "Content-Type: multipart/form-data" \
           -F "code=@claude-code-ui.tar.gz" \
           -F "entrypoint=index.html" \
@@ -162,7 +162,7 @@ jobs:
         curl -s -X POST \
           "https://nyc.cloud.appwrite.io/v1/functions" \
           -H "X-Appwrite-Project: ${{ env.APPWRITE_PROJECT_ID }}" \
-          -H "X-Appwrite-Key: ${{ secrets.TRADING_POST_APPWRITE_API_KEY }}" \
+          -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
           -H "Content-Type: application/json" \
           -d '{
             "functionId": "${{ env.APPWRITE_SITE_ID }}",
@@ -182,7 +182,7 @@ jobs:
         RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
           "https://nyc.cloud.appwrite.io/v1/functions/${{ env.APPWRITE_SITE_ID }}/deployments" \
           -H "X-Appwrite-Project: ${{ env.APPWRITE_PROJECT_ID }}" \
-          -H "X-Appwrite-Key: ${{ secrets.TRADING_POST_APPWRITE_API_KEY }}" \
+          -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
           -H "Content-Type: multipart/form-data" \
           -F "code=@claude-code-ui-function.tar.gz" \
           -F "entrypoint=index.html" \
