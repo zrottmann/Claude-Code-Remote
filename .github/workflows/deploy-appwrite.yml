@@ -29,7 +29,7 @@ jobs:
       env:
         APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
         APPWRITE_PROJECT_ID: 68a4e3da0022f3e129d0
-        APPWRITE_SITE_ID: remote
+        APPWRITE_SITE_ID: 68aa1b51000a9c3a9c36
       run: |
         cd appwrite-deployment
         
