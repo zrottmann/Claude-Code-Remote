@@ -67,11 +67,11 @@ jobs:
       if: steps.changes.outputs.changes-detected == 'true'
       run: |
         cd appwrite-deployment
-        if [ -f "index.html" ] && [ -f "websocket-integration.js" ]; then
-          echo "✅ Required files exist"
+        if [ -f "index.html" ] && [ -f "package.json" ]; then
+          echo "✅ ClaudeCodeUI files exist"
           echo "ready=true" >> $GITHUB_OUTPUT
         else
-          echo "❌ Required files missing"
+          echo "❌ Required ClaudeCodeUI files missing"
           echo "ready=false" >> $GITHUB_OUTPUT
           exit 1
         fi
@@ -99,12 +99,12 @@ jobs:
         name: claude-remote-build
         path: appwrite-deployment/
         
-    - name: 📦 Create Deployment Package
+    - name: 📦 Create ClaudeCodeUI Deployment Package
       run: |
         cd appwrite-deployment
-        tar -czf claude-remote-deployment.tar.gz index.html websocket-integration.js package.json
-        ls -la claude-remote-deployment.tar.gz
-        echo "📊 Package size: $(du -h claude-remote-deployment.tar.gz | cut -f1)"
+        tar -czf claude-code-ui.tar.gz index.html package.json
+        ls -la claude-code-ui.tar.gz
+        echo "📊 ClaudeCodeUI Package size: $(du -h claude-code-ui.tar.gz | cut -f1)"
         
     - name: 🚀 Deploy to Appwrite Sites
       id: sites-deploy
@@ -113,11 +113,12 @@ jobs:
         echo "🎯 Deploying to Sites API..."
         
         RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-          "https://nyc.cloud.appwrite.io/v1/sites/${{ env.APPWRITE_SITE_ID }}/deployments" \
+          "https://nyc.cloud.appwrite.io/v1/functions/${{ env.APPWRITE_SITE_ID }}/deployments" \
           -H "X-Appwrite-Project: ${{ env.APPWRITE_PROJECT_ID }}" \
-          -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
+          -H "X-Appwrite-Key: ${{ secrets.TRADING_POST_APPWRITE_API_KEY }}" \
           -H "Content-Type: multipart/form-data" \
-          -F "code=@claude-remote-deployment.tar.gz" \
+          -F "code=@claude-code-ui.tar.gz" \
+          -F "entrypoint=index.html" \
           -F "activate=true")
           
         HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
@@ -127,11 +128,11 @@ jobs:
         echo "Response: $RESPONSE_BODY"
         
         if [ "$HTTP_CODE" -eq 201 ] || [ "$HTTP_CODE" -eq 200 ]; then
-          echo "✅ Sites deployment successful!"
-          echo "🌐 Chat Interface URL: https://super.appwrite.network"
+          echo "✅ ClaudeCodeUI deployment successful!"
+          echo "🌐 ClaudeCodeUI URL: https://${{ env.APPWRITE_SITE_ID }}.appwrite.network"
           echo "success=true" >> $GITHUB_OUTPUT
         else
-          echo "❌ Sites deployment failed with code: $HTTP_CODE"
+          echo "❌ ClaudeCodeUI deployment failed with code: $HTTP_CODE"
           echo "success=false" >> $GITHUB_OUTPUT
         fi
 
@@ -153,7 +154,7 @@ jobs:
     - name: 📦 Create Function Package
       run: |
         cd appwrite-deployment
-        tar -czf claude-remote-function.tar.gz index.html websocket-integration.js package.json
+        tar -czf claude-code-ui-function.tar.gz index.html package.json
         
     - name: 🔧 Create Appwrite Function
       run: |
@@ -161,11 +162,11 @@ jobs:
         curl -s -X POST \
           "https://nyc.cloud.appwrite.io/v1/functions" \
           -H "X-Appwrite-Project: ${{ env.APPWRITE_PROJECT_ID }}" \
-          -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
+          -H "X-Appwrite-Key: ${{ secrets.TRADING_POST_APPWRITE_API_KEY }}" \
           -H "Content-Type: application/json" \
           -d '{
-            "functionId": "remote",
-            "name": "Claude Code Remote Chat",
+            "functionId": "${{ env.APPWRITE_SITE_ID }}",
+            "name": "ClaudeCodeUI Remote Interface",
             "runtime": "node-18.0",
             "execute": ["any"],
             "events": [],
@@ -179,11 +180,11 @@ jobs:
         echo "🎯 Deploying as Function..."
         
         RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-          "https://nyc.cloud.appwrite.io/v1/functions/remote/deployments" \
+          "https://nyc.cloud.appwrite.io/v1/functions/${{ env.APPWRITE_SITE_ID }}/deployments" \
           -H "X-Appwrite-Project: ${{ env.APPWRITE_PROJECT_ID }}" \
-          -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
+          -H "X-Appwrite-Key: ${{ secrets.TRADING_POST_APPWRITE_API_KEY }}" \
           -H "Content-Type: multipart/form-data" \
-          -F "code=@claude-remote-function.tar.gz" \
+          -F "code=@claude-code-ui-function.tar.gz" \
           -F "entrypoint=index.html" \
           -F "activate=true")
           
