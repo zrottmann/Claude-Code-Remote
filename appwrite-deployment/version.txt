@@ -1,1 +1,1 @@
-1.1.0-claude-api-integration-fix
+1.1.1-superconsole-deploy-config

@@ -28,8 +28,8 @@ jobs:
     - name: Deploy ClaudeCodeUI to Appwrite Sites
       env:
         APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
-        APPWRITE_PROJECT_ID: 68aa1a4500288bc04682
-        APPWRITE_SITE_ID: 68aa1b51000a9c3a9c36
+        APPWRITE_PROJECT_ID: 689bdee000098bd9d55c
+        APPWRITE_SITE_ID: remote-chat
       run: |
         cd appwrite-deployment
         
