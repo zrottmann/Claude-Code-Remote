@@ -12,10 +12,10 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Working superconsole configuration (from successful commit 22ce73f)
+// Your Appwrite project configuration
 const config = {
-    projectId: '689bdee000098bd9d55c',
-    siteId: 'remote-chat',
+    projectId: '68aa1a4500288bc04682',
+    siteId: '68aa1b51000a9c3a9c36',
     endpoint: 'nyc.cloud.appwrite.io',
     // Note: You'll need to provide the API key when running this script
     apiKey: process.env.APPWRITE_API_KEY || process.argv[2]
