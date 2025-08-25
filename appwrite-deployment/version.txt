@@ -1,1 +1,1 @@
-1.1.4-trigger-with-api-key-configured
+1.2.0-git-integration-deployment

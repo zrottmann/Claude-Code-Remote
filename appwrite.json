@@ -1,11 +1,13 @@
 {
-  "projectId": "68a9a5e4003518a2495b",
-  "projectName": "Claude Code Remote",
-  "sites": [{
-    "$id": "remote",
-    "name": "Claude Code Remote",
-    "hostname": "remote.appwrite.network",
-    "entrypoint": "index.html",
-    "root": "dist"
-  }]
+    "projectId": "68aa1a4500288bc04682",
+    "projectName": "Claude Code Remote",
+    "sites": [
+        {
+            "$id": "remote",
+            "name": "Claude Code Remote",
+            "hostname": "remote.appwrite.network",
+            "entrypoint": "index.html",
+            "root": "dist"
+        }
+    ]
 }
